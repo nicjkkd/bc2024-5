@@ -56,6 +56,15 @@ const saveNote = (noteName, content) => {
   }
 };
 
+const removeNote = (noteName) => {
+  try {
+    const notePath = getNotePath(noteName);
+    if (fs.existsSync(notePath)) fs.unlinkSync(notePath);
+  } catch (error) {
+    console.error("Error deleting note:", error);
+  }
+};
+
 app.get("/notes", (req, res) => {
   const notesList = fs
     .readdirSync(cache)
@@ -79,6 +88,13 @@ app.post("/write", multer.none(), (req, res) => {
   if (fetchNote(note_name)) return res.status(400).send("Note already exists");
   saveNote(note_name, note);
   res.status(201).send("Note successfully created");
+});
+
+app.delete("/notes/:noteName", (req, res) => {
+  const noteName = req.params.noteName;
+  if (!fetchNote(noteName)) return res.status(404).send("Note not found");
+  removeNote(noteName);
+  res.sendStatus(200);
 });
 
 app.listen(port, host, () => {
