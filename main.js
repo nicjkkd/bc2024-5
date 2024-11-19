@@ -1,4 +1,12 @@
 const { Command } = require("commander");
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const bodyParser = require("body-parser");
+const multer = require("multer");
+
+const app = express();
+app.use(bodyParser.json());
 
 const program = new Command();
 
@@ -25,7 +33,54 @@ if (!cache) {
   return;
 }
 
+const getNotePath = (noteName) => {
+  return path.join(cache, `${noteName}.txt`);
+};
+
+const fetchNote = (noteName) => {
+  try {
+    const notePath = getNotePath(noteName);
+    return fs.existsSync(notePath) ? fs.readFileSync(notePath, "utf8") : null;
+  } catch (error) {
+    console.error("Error reading note:", error);
+    return null;
+  }
+};
+
+const saveNote = (noteName, content) => {
+  try {
+    const notePath = getNotePath(noteName);
+    fs.writeFileSync(notePath, content, "utf8");
+  } catch (error) {
+    console.error("Error writing note:", error);
+  }
+};
+
+app.get("/notes", (req, res) => {
+  const notesList = fs
+    .readdirSync(cache)
+    .filter((filename) => filename.endsWith(".txt"))
+    .map((filename) => {
+      const name = filename.replace(/\.txt$/, "");
+      const text = fetchNote(name);
+      return { name, text };
+    });
+  res.status(200).json(notesList);
+});
+
+app.get("/notes/:noteName", (req, res) => {
+  const content = fetchNote(req.params.noteName);
+  if (!content) return res.status(404).send("Note not found");
+  res.status(200).send(content);
+});
+
+app.post("/write", multer.none(), (req, res) => {
+  const { note_name, note } = req.body;
+  if (fetchNote(note_name)) return res.status(400).send("Note already exists");
+  saveNote(note_name, note);
+  res.status(201).send("Note successfully created");
+});
+
 app.listen(port, host, () => {
-  console.log(`Сервер запущено на http://${host}:${port}`);
-  console.log(`Кеш директорія: ${cache}`);
+  console.log(`Server is running on http://${host}:${port}`);
 });
