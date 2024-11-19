@@ -83,7 +83,7 @@ app.get("/notes/:noteName", (req, res) => {
   res.status(200).send(content);
 });
 
-app.post("/write", multer.none(), (req, res) => {
+app.post("/write", multer().none(), (req, res) => {
   const { note_name, note } = req.body;
   if (fetchNote(note_name)) return res.status(400).send("Note already exists");
   saveNote(note_name, note);
@@ -97,7 +97,7 @@ app.delete("/notes/:noteName", (req, res) => {
   res.sendStatus(200);
 });
 
-app.put("/notes/:noteName", multer.none(), (req, res) => {
+app.put("/notes/:noteName", multer().none(), (req, res) => {
   const noteName = req.params.noteName;
   const { noteContent } = req.body;
 
