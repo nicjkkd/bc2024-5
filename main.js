@@ -109,6 +109,16 @@ app.put("/notes/:noteName", multer.none(), (req, res) => {
   res.status(200).send("Note successfully updated");
 });
 
+app.get("/UploadForm.html", (req, res) => {
+  const filePath = path.resolve(__dirname, "UploadForm.html");
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error("Error serving the file:", err);
+      res.status(500).send("An error occurred while serving the file.");
+    }
+  });
+});
+
 app.listen(port, host, () => {
   console.log(`Server is running on http://${host}:${port}`);
 });
