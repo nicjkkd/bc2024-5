@@ -97,6 +97,18 @@ app.delete("/notes/:noteName", (req, res) => {
   res.sendStatus(200);
 });
 
+app.put("/notes/:noteName", multer.none(), (req, res) => {
+  const noteName = req.params.noteName;
+  const { noteContent } = req.body;
+
+  if (!fetchNote(noteName)) {
+    return res.status(404).send("Note does not exist");
+  }
+
+  saveNote(noteName, noteContent);
+  res.status(200).send("Note successfully updated");
+});
+
 app.listen(port, host, () => {
   console.log(`Server is running on http://${host}:${port}`);
 });
